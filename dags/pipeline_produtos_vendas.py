@@ -58,20 +58,22 @@ def transform_data(**context):
     """Transforma os dados extraídos"""
     logging.info("Iniciando transformação dos dados")
 
-    # - Preencher `Preco_Custo` nulo com média da categoria
-    df['Preco_Custo'] = pd.to_numeric(df['Preco_Custo'],errors='coerce')
+    # Carrega os dados extraídos
+    df = pd.read_csv('/temp/dados_extraidos_produtos.csv')
+
+    # --- Preencher Fornecedor nulo ---
+    df['Fornecedor'] = df['Fornecedor'].fillna('Não informado')
+    df['Fornecedor'] = df['Fornecedor'].replace('', 'Não informado')
+
+    # --- Preencher Preco_Custo nulo com média da categoria ---
+    df['Preco_Custo'] = pd.to_numeric(df['Preco_Custo'], errors='coerce')
     media_categoria = df.groupby('Categoria')['Preco_Custo'].transform('mean')
     df['Preco_Custo'] = df['Preco_Custo'].fillna(media_categoria)
 
-
-    # - Preencher `Fornecedor` nulo com "Não Informado"
-    logging.info("Iniciando transfomração dos dados")
-
-    df = pd.read_csv('/temp/dados_extraidos_produtos.csv')
-    df['Fornecedor'] = df['Fornecedor'].fillna('Não informado')
-    df['Fornecedor'] = df['Fornecedor'].replace('','Não informado')
-        
-
-    # - Preencher `Preco_Venda` nulo com `Preco_Custo * 1.3`
+    # --- Preencher Preco_Venda nulo com Preco_Custo * 1.3 ---
     df['Preco_Venda'] = pd.to_numeric(df['Preco_Venda'], errors='coerce')
     df['Preco_Venda'] = df['Preco_Venda'].fillna(df['Preco_Custo'] * 1.3)
+
+    # Salva os dados transformados
+    df.to_csv('/temp/dados_transformados_produtos.csv', index=False)
+    logging.info(f"Transformação concluída: {len(df)} registros processados")
