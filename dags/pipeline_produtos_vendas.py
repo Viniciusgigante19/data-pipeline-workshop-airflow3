@@ -29,10 +29,6 @@ def extract_data(**context):
     logging.info(f"Número de registros extraídos: {len(df)}")
     logging.info(f"Número de colunas: {df.shape[1]}")
 
-    # Opcional: salvar para próxima task ou usar XCom
-    df.to_csv('/tmp/produtos_extraidos.csv', index=False)
-
-
 
 ### TASK 2 ###
 def extract_vendas(**context):
@@ -52,7 +48,12 @@ def extract_vendas(**context):
     logging.info(f"Número de registros extraídos: {len(df)}")
     logging.info(f"Número de colunas: {df.shape[1]}")
 
-    # Opcional: salvar para próxima task ou usar XCom
-    df.to_csv('/tmp/produtos_extraidos.csv', index=False)
+
+### TASK 3 ###
+def transform_data(**context):
+    """Transforma os dados extraídos"""
+    logging.info("Iniciando transformação dos dados")
+
+    df = pd.read_csv('/tmp/dados_extraidos.csv')
 
     
