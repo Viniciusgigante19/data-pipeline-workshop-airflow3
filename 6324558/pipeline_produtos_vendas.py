@@ -301,3 +301,41 @@ def generate_report(**context):
     logging.info(f"Relatório gerado com sucesso e salvo em: {relatorio_path}")
 
     return resumo
+
+# TASK 1 DEFINIDA
+extract_produtos_task = PythonOperator(
+    task_id = 'extract_produtos',
+    python_callable=extract_produtos,
+    dag=dag
+)
+
+# TASK 2 DEFINIDA
+extract_vendas_task = PythonOperator(
+    task_id = 'extract_vendas',
+    python_callable=extract_vendas,
+    dag=dag
+)
+
+# TASK 3 DEFINIDA
+transform_data_task = PythonOperator(
+    task_id = 'transform_data',
+    python_callable=transform_data,
+    dag=dag
+)
+
+# TASK 5 DEFINIDA
+load_data_task = PythonOperator(
+    task_id = 'load_data',
+    python_callable=load_data,
+    dag=dag
+)
+
+# TASK 6 DEFINIDA
+generate_report_task = PythonOperator(
+    task_id = 'generate_report',
+    python_callable=generate_report,
+    dag=dag
+)
+
+[extract_produtos_task, extract_vendas_task] >> transform_data_task
+transform_data_task >> create_tables >> load_data_task >> generate_report_task
