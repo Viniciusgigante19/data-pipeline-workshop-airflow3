@@ -87,6 +87,7 @@ docker compose build
 ```bash
 docker compose up --no-deps --wait airflow-init
 ```
+docker compose up --no-deps --build airflow-standalone
 
 3. **Subir os serviços:**
 ```bash

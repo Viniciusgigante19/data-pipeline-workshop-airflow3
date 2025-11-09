@@ -21,7 +21,7 @@ dag = DAG(
     dag_id='pipeline_produtos_vendas',
     default_args=default_args,
     description='Pipeline ETL de produtos e vendas',
-    schedule_interval='0 6 * * *',  
+    schedule='0 6 * * *',  
     catchup=False,                   
     tags=['produtos', 'vendas', 'exercicio'],
 )
