@@ -88,8 +88,8 @@ def transform_data(**context):
     media_categoria = df_produtos.groupby('Categoria')['Preco_Custo'].transform('mean')
     df_produtos['Preco_Custo'] = df_produtos['Preco_Custo'].fillna(media_categoria)
 
-    df_produtos['Preco_Venda'] = pd.to_numeric(df_produtos['Preco_Venda'], errors='coerce')
-    df_produtos['Preco_Venda'] = df_produtos['Preco_Venda'].fillna(df_produtos['Preco_Custo'] * 1.3)
+    df_vendas['Preco_Venda'] = pd.to_numeric(df_vendas['Preco_Venda'], errors='coerce')
+    df_vendas['Preco_Venda'] = df_vendas['Preco_Venda'].fillna(df_produtos['Preco_Custo'] * 1.3)
 
     # --- Transformação de vendas ---
     df_vendas['Quantidade_Vendida'] = pd.to_numeric(df_vendas['Quantidade_Vendida'], errors='coerce').fillna(0)
