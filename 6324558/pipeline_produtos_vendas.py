@@ -76,56 +76,44 @@ def transform_data(**context):
     """Transforma os dados extraídos"""
     logging.info("Iniciando transformação dos dados")
 
-    # Carrega os dados extraídos
-    df = pd.read_csv('/temp/dados_extraidos_produtos.csv')
-    df = pd.read_csv('/temp/dados_extraidos_vendas.csv')
+    # Carrega os dados extraídos separadamente
+    df_produtos = pd.read_csv('/temp/dados_extraidos_produtos.csv')
+    df_vendas = pd.read_csv('/temp/dados_extraidos_vendas.csv')
 
-    # --- Preencher Fornecedor nulo ---
-    df['Fornecedor'] = df['Fornecedor'].fillna('Não informado')
-    df['Fornecedor'] = df['Fornecedor'].replace('', 'Não informado')
+    # --- Transformação de produtos ---
+    df_produtos['Fornecedor'] = df_produtos['Fornecedor'].fillna('Não informado')
+    df_produtos['Fornecedor'] = df_produtos['Fornecedor'].replace('', 'Não informado')
 
-    # --- Preencher Preco_Custo nulo com média da categoria ---
-    df['Preco_Custo'] = pd.to_numeric(df['Preco_Custo'], errors='coerce')
-    media_categoria = df.groupby('Categoria')['Preco_Custo'].transform('mean')
-    df['Preco_Custo'] = df['Preco_Custo'].fillna(media_categoria)
+    df_produtos['Preco_Custo'] = pd.to_numeric(df_produtos['Preco_Custo'], errors='coerce')
+    media_categoria = df_produtos.groupby('Categoria')['Preco_Custo'].transform('mean')
+    df_produtos['Preco_Custo'] = df_produtos['Preco_Custo'].fillna(media_categoria)
 
-    # --- Preencher Preco_Venda nulo com Preco_Custo * 1.3 ---
-    df['Preco_Venda'] = pd.to_numeric(df['Preco_Venda'], errors='coerce')
-    df['Preco_Venda'] = df['Preco_Venda'].fillna(df['Preco_Custo'] * 1.3)
+    df_produtos['Preco_Venda'] = pd.to_numeric(df_produtos['Preco_Venda'], errors='coerce')
+    df_produtos['Preco_Venda'] = df_produtos['Preco_Venda'].fillna(df_produtos['Preco_Custo'] * 1.3)
 
-    # --- Carregar e integrar dados de vendas ---
-    logging.info("Carregando dados de vendas para enriquecer produtos")
-    vendas_path = '/opt/airflow/data/vendas_produtos.csv'
-    vendas_df = pd.read_csv(vendas_path)
+    # --- Transformação de vendas ---
+    df_vendas['Quantidade_Vendida'] = pd.to_numeric(df_vendas['Quantidade_Vendida'], errors='coerce').fillna(0)
+    df_vendas['Preco_Venda'] = pd.to_numeric(df_vendas['Preco_Venda'], errors='coerce').fillna(0)
 
-    # Garantir tipos corretos
-    vendas_df['Quantidade_Vendida'] = pd.to_numeric(vendas_df['Quantidade_Vendida'], errors='coerce').fillna(0)
-    vendas_df['Preco_Venda'] = pd.to_numeric(vendas_df['Preco_Venda'], errors='coerce').fillna(0)
-
-    # Calcular total de vendas por produto
-    vendas_agg = vendas_df.groupby('ID_Produto').agg({
+    # --- Agregação de vendas ---
+    vendas_agg = df_vendas.groupby('ID_Produto').agg({
         'Quantidade_Vendida': 'sum',
         'Preco_Venda': 'mean'
     }).reset_index()
-
     vendas_agg.rename(columns={
         'Quantidade_Vendida': 'Total_Vendido',
         'Preco_Venda': 'Media_Preco_Venda'
     }, inplace=True)
 
-    # Fazer merge com o DataFrame principal
-    df = df.merge(vendas_agg, on='ID_Produto', how='left')
-
-    # Preencher nulos com 0 após merge
-    df['Total_Vendido'] = df['Total_Vendido'].fillna(0)
-    df['Media_Preco_Venda'] = df['Media_Preco_Venda'].fillna(df['Preco_Venda'])
-
-    # --- Calcular Receita Total ---
-    df['Receita_Total'] = df['Total_Vendido'] * df['Media_Preco_Venda']
+    # --- Merge produtos + vendas ---
+    df_final = df_produtos.merge(vendas_agg, on='ID_Produto', how='left')
+    df_final['Total_Vendido'] = df_final['Total_Vendido'].fillna(0)
+    df_final['Media_Preco_Venda'] = df_final['Media_Preco_Venda'].fillna(df_final['Preco_Venda'])
+    df_final['Receita_Total'] = df_final['Total_Vendido'] * df_final['Media_Preco_Venda']
 
     # Salvar dados transformados
-    df.to_csv('/temp/dados_transformados_produtos.csv', index=False)
-    logging.info(f"Transformação concluída: {len(df)} registros processados")
+    df_final.to_csv('/temp/dados_transformados_produtos.csv', index=False)
+    logging.info(f"Transformação concluída: {len(df_final)} registros processados")
 
 
 ### TASK 4 ###
