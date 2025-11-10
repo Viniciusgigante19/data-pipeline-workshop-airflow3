@@ -78,6 +78,7 @@ def transform_data(**context):
 
     # Carrega os dados extraídos
     df = pd.read_csv('/temp/dados_extraidos_produtos.csv')
+    df = pd.read_csv('/temp/dados_extraidos_vendas.csv')
 
     # --- Preencher Fornecedor nulo ---
     df['Fornecedor'] = df['Fornecedor'].fillna('Não informado')

@@ -10,11 +10,14 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
       AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres_erp:5432/northwind
+      AIRFLOW__CORE__BASE_URL: http://localhost:5000
+      AIRFLOW_CONN_POSTGRES_DEFAULT: postgresql+psycopg2://postgres:postgres@postgres_erp:5432/northwind
     volumes:
       - ./6324558:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./data:/opt/airflow/data:rw
+      - ./temp:/temp:rw
     command: airflow standalone
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
